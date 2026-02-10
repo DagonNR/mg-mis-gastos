@@ -20,25 +20,19 @@ class MainActivity : AppCompatActivity() {
         val tv = findViewById<TextView>(R.id.tvResult)
 
         btn.setOnClickListener {
-            tv.text = "Verificando conexión..."
-
-            // 1. Usamos un documento fijo para no "ensuciar" la base de datos
+            tv.text = "Verificando"
             val testDoc = db.collection("status").document("ping")
-
             val data = hashMapOf(
                 "last_check" to FieldValue.serverTimestamp(),
                 "device" to android.os.Build.MODEL
             )
 
-            // 2. Intentamos escribir.
             testDoc.set(data)
                 .addOnSuccessListener {
-                    // 3. Forzamos la lectura desde el SERVIDOR (no de la caché)
-                    // Esto garantiza que el SDK realmente pudo hablar con Firebase.
                     testDoc.get(Source.SERVER)
                         .addOnSuccessListener { snapshot ->
-                            tv.text = "¡Conectado exitosamente con Firestore!"
-                            tv.append("\nÚltima sincronización: ${snapshot.getTimestamp("last_check")?.toDate()}")
+                            tv.text = "Conectado a Firebase."
+                            tv.append("\nÚltima conexión: ${snapshot.getTimestamp("last_check")?.toDate()}")
                         }
                         .addOnFailureListener { e ->
                             tv.text = "Escritura local OK, pero sin respuesta del servidor."
