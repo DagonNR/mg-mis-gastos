@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
                             tv.append("\nÚltima conexión: ${snapshot.getTimestamp("last_check")?.toDate()}")
                         }
                         .addOnFailureListener { e ->
-                            tv.text = "Escritura local OK, pero sin respuesta del servidor."
+                            tv.text = "Escritura local OK, pero sin respuesta del servidor.\nError: ${e.message}"
                         }
                 }
                 .addOnFailureListener { e ->
