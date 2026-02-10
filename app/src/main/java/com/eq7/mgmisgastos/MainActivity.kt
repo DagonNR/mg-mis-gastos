@@ -6,6 +6,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.Source
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,22 +20,26 @@ class MainActivity : AppCompatActivity() {
         val tv = findViewById<TextView>(R.id.tvResult)
 
         btn.setOnClickListener {
+            tv.text = "Verificando"
+            val testDoc = db.collection("status").document("ping")
             val data = hashMapOf(
-                "status" to "ok",
-                "createdAt" to FieldValue.serverTimestamp()
+                "last_check" to FieldValue.serverTimestamp(),
+                "device" to android.os.Build.MODEL
             )
 
-            db.collection("ping")
-                .add(data)
-                .addOnSuccessListener { doc ->
-                    tv.text = "Conectado. Doc: ${doc.id}"
-
-                    doc.get().addOnSuccessListener { snap ->
-                        tv.append("\nLeído: ${snap.data}")
-                    }
+            testDoc.set(data)
+                .addOnSuccessListener {
+                    testDoc.get(Source.SERVER)
+                        .addOnSuccessListener { snapshot ->
+                            tv.text = "Conectado a Firebase."
+                            tv.append("\nÚltima conexión: ${snapshot.getTimestamp("last_check")?.toDate()}")
+                        }
+                        .addOnFailureListener { e ->
+                            tv.text = "Escritura local OK, pero sin respuesta del servidor.\nError: ${e.message}"
+                        }
                 }
                 .addOnFailureListener { e ->
-                    tv.text = "Error: ${e.message}"
+                    tv.text = "Error de conexión: ${e.message}"
                 }
         }
     }
